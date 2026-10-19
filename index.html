@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DTCTS Interactive Evidence Navigator</title>
+  <link rel="stylesheet" href="./styles.css?v=cb006e3b1da3a49a" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">DTCTS Interactive Evidence Navigator</p>
+      <h1>Canonical review evidence navigator</h1>
+      <p class="subhead">Explore the frozen canonical review dataset with evidence queries and filters.</p>
+    </div>
+  </header>
+
+  <main>
+    <section id="mode1View" class="mode-view">
+      <section class="panel nlq-panel" aria-labelledby="nlqHeading">
+        <p class="eyebrow">Mode 1 / v1.2-NLQ / deterministic evidence queries</p>
+        <h2 id="nlqHeading">Ask the evidence navigator</h2>
+        <p class="muted">English, single-turn queries. Cross-field AND intersects filters; explicit same-field OR unions categories; ambiguous same-field AND asks for clarification. Unsupported wording leaves current results unchanged.</p>
+        <form id="nlqForm" class="nlq-form">
+          <label class="field full" for="nlqPrompt"><span>Your evidence question</span><input id="nlqPrompt" type="text" maxlength="2000" placeholder="Show DT-L2 studies with independent external benchmark and public source code" autocomplete="off" /></label>
+          <button class="primary" id="nlqSubmit" type="submit">Interpret &amp; apply</button>
+        </form>
+        <div class="nlq-examples" aria-label="Example queries">
+          <button type="button" data-nlq-example="Show DT-positive studies that are not VCTs">DT+ / VCT-</button>
+          <button type="button" data-nlq-example="Show DT-L2 studies with independent external benchmark and public source code">DT-L2 + independent external benchmark + public code</button>
+          <button type="button" data-nlq-example="Show DT-L2 studies grouped by disease">DT-L2 by disease</button>
+          <button type="button" data-nlq-example="Cross tab DT by VCT">DT by VCT</button>
+          <button type="button" data-nlq-example="Compare observed-outcome evidence and hybrid evidence">Compare observed-outcome / hybrid evidence</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div><p class="eyebrow">DT × VCT</p><h2>Capability cross-tab</h2></div>
+          <p class="muted">Select a cell to drill down into canonical records.</p>
+        </div>
+        <div id="crosstab" class="crosstab-wrap"></div>
+      </section>
+
+      <section class="workspace">
+        <aside class="panel filters" aria-label="Mode 1 filters">
+          <div class="section-head compact"><div><p class="eyebrow">Query controls</p><h2>Canonical filters</h2></div><button class="text-button" id="resetBtn" type="button">Reset</button></div>
+          <label class="field full"><span>Record lookup</span><input id="searchInput" type="search" placeholder="Study ID, title, report ID, population…" /></label>
+          <div class="filter-grid" id="categoricalFilters"></div>
+          <fieldset><legend>Functional roles <span class="tooltip" title="Roles are multi-label. They are separate from the CMF01–CMF13 method-intrinsic taxonomy.">?</span></legend>
+            <label class="field"><span>Must include all</span><select id="roleInclude" multiple size="6"></select></label>
+            <label class="field"><span>Must exclude any</span><select id="roleExclude" multiple size="6"></select></label>
+          </fieldset>
+          <fieldset><legend>Accessibility</legend>
+            <label class="field"><span>Open public data flag</span><select data-bool-filter="any_open_public_data"><option value="">Any</option><option value="true">True</option><option value="false">False (not flagged)</option></select></label>
+            <label class="field"><span>Public source code <span class="tooltip" title="Public visibility at any license status; not equivalent to recognized open-source licensing.">?</span></span><select data-bool-filter="any_public_source_any_license"><option value="">Any</option><option value="true">True</option><option value="false">False (not flagged)</option></select></label>
+            <label class="field"><span>Recognized open-source license flag</span><select data-bool-filter="any_open_source_licensed"><option value="">Any</option><option value="true">True</option><option value="false">False (not flagged)</option></select></label>
+          </fieldset>
+          <details id="additionalFlags"><summary>Additional frozen descriptors</summary><p class="muted">False means the descriptor is not flagged; it is not proof of absolute absence.</p><div id="additionalBoolFilters"></div></details>
+          <button id="applyBtn" class="primary" type="button">Apply filters</button>
+        </aside>
+
+        <section class="panel results-panel">
+          <div class="section-head"><div><p class="eyebrow">Canonical records</p><h2><span id="resultCount">—</span> study units</h2></div><div class="result-actions"><label>Rows <select id="pageSize"><option>25</option><option selected>50</option><option>100</option></select></label></div></div>
+          <div class="table-wrap"><table class="records-table"><thead><tr><th>Title</th><th>DT</th><th>VCT</th><th>DT level</th><th>TM</th><th>Evidence provenance / Assumption scrutiny / Evaluation scope</th><th>Roles</th><th>Open Public Data Flag</th><th>Source Code</th></tr></thead><tbody id="recordsBody"></tbody></table></div>
+          <div class="pagination"><button id="prevPage" type="button">Previous</button><span id="pageStatus">Page 1</span><button id="nextPage" type="button">Next</button></div>
+        </section>
+      </section>
+
+      <section class="panel glossary">
+        <p class="eyebrow">Definitions</p><h2>Framework reminders</h2>
+        <div class="glossary-grid">
+          <article><h3>DT capability</h3><p>Individual-level computational representation retaining subject-specific state and able to predict or simulate clinically relevant state, trajectory, outcome, or response. Patient-level data alone are insufficient.</p></article>
+          <article><h3>VCT capability</h3><p>Identifiable treatment-versus-comparator trial or trial-like comparison in which model-generated or simulated patient-level evidence materially enters a principal comparison, calibration/replication analysis, or treatment-effect analysis.</p></article>
+          <article><h3>DT-L2</h3><p>Requires anchoring to a specific observed person. Direct patient-record input alone is insufficient.</p></article>
+          <article><h3>TM0 / TM1 / TM2</h3><p>Peer temporal lifecycle classes: no forward propagation; forward propagation without later assimilation; or later empirical observations revising the instantiated subject. They are not a maturity ranking.</p></article>
+          <article><h3>Evidence provenance / Assumption scrutiny / Evaluation scope</h3><p>These are distinct dimensions and are not combined into a quality score. “Not applicable” is an applicability state, not the lowest assumption scrutiny grade; scrutiny is ordered only among applicable claims.</p></article>
+          <article><h3>Representation modality</h3><p>Classified from the patient-derived object actually consumed by subject-specific instantiation or update, not merely from an upstream raw source modality.</p></article>
+        </div>
+      </section>
+    </section>
+
+  </main>
+
+  <dialog id="detailDialog">
+    <div class="dialog-head"><div><p class="eyebrow" id="detailEyebrow">Record detail</p><h2 id="detailTitle"></h2></div><button id="closeDialog" aria-label="Close">×</button></div>
+    <div id="detailBody"></div>
+  </dialog>
+
+  <script type="module" src="./browser-bootstrap.js?v=eea3503219063ab2"></script>
+</body>
+</html>
